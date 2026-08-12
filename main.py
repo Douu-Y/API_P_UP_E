@@ -49,9 +49,9 @@ def create_producto(producto: Productos):
     conn = get_connection()
     cur = conn.cursor()
     cur.execute("INSERT INTO " \
-                    "productos(codigo, nombre, precio, stack) VALUES (%s, %s, %s, %s) " \
+                    "productos(nombre, precio, stock) VALUES (%s, %s, %s) " \
                     "RETURNING id", 
-                    (producto.codigo, producto.nombre, producto.precio, producto.stack))
+                    (producto.nombre, producto.precio, producto.stock))
     new_id = cur.fetchone()["id"]
     conn.commit()
     cur.close()
