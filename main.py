@@ -34,7 +34,7 @@ def get_productos():
 def buscar_producto(id: int):
     conn = get_connection()
     cur = conn.cursor()
-    cur.execute("SELECT id, codigo, nombre, precio, stack FROM productos WHERE id = %s", (id,))
+    cur.execute("SELECT id, nombre, precio, stock, categoria_id FROM productos WHERE id = %s", (id,))
     producto = cur.fetchone()
     cur.close()
     conn.close()
@@ -44,29 +44,20 @@ def buscar_producto(id: int):
     else:
         raise HTTPException(status_code=404, detail="Producto no encontrado")
 
-
 @app.post("/Productos")
 def create_producto(producto: Productos):
     conn = get_connection()
     cur = conn.cursor()
-
-    cur.execute("SELECT id FROM categorias WHERE id = %s", (producto.categoria_id,))
-    if not cur.fetchone():
-        cur.close()
-        conn.close()
-        raise HTTPException(status_code=404, detail="La categoría no existe")
-
-    cur.execute(
-        "INSERT INTO productos(nombre, precio, stock, categoria_id) VALUES (%s, %s, %s, %s) "
-        "RETURNING id",
-        (producto.nombre, producto.precio, producto.stock, producto.categoria_id)
-    )
+    cur.execute("INSERT INTO " \
+                    "productos(codigo, nombre, precio, stack) VALUES (%s, %s, %s, %s) " \
+                    "RETURNING id", 
+                    (producto.codigo, producto.nombre, producto.precio, producto.stack))
     new_id = cur.fetchone()["id"]
     conn.commit()
     cur.close()
     conn.close()
 
-    return {"mensaje": "Producto creado", "id": new_id}
+    return {"mensaje": "Producto Creado", "id": new_id}
 
 @app.get("/productos/stock-bajo/{minimo}")
 def productos_stock_bajo(minimo: int):
